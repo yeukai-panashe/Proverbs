@@ -50,7 +50,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .nav-header h2 { margin: 0; font-size: 1.2em; }
+        .nav-header h2 { margin: 0; font-size: 1.2em; cursor: pointer; }
         .theme-toggle { background: none; border: none; cursor: pointer; color: inherit; }
         .theme-toggle svg { width: 22px; height: 22px; }
 
@@ -71,6 +71,10 @@
         /* Main Content Area */
         .main-content {
             overflow-y: auto;
+            padding: 0; /* REMOVED padding from here */
+        }
+        /* ADDED this new class for content that needs padding */
+        .content-padding {
             padding: 40px;
         }
         .content-header {
@@ -94,6 +98,28 @@
             color: var(--accent-color);
             margin-right: 8px;
         }
+        
+        /* Styles for the Proverb of the Day view */
+        .proverb-view-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+            padding: 40px; /* Give the proverb container its own padding */
+            box-sizing: border-box; /* ADDED this to ensure padding is calculated correctly */
+        }
+        .proverb-text {
+            font-size: 2em;
+            font-style: italic;
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+        .proverb-reference {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
     </style>
 </head>
@@ -111,12 +137,8 @@
             </div>
         </nav>
 
-        <main class="main-content">
-            <h1 id="content-header">Welcome</h1>
-            <div id="bible-text" class="bible-text">
-                <p>Select a book from the navigation panel to begin reading.</p>
-            </div>
-        </main>
+        <main class="main-content" id="main-content-area">
+            </main>
     </div>
     
     <script src="script.js"></script>

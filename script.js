@@ -17,11 +17,12 @@ window.onload = function() {
         .then(response => response.json())
         .then(data => {
             bibleData = data;
+            displayDailyProverb(); // Display the proverb on initial load
             renderBookList();
         })
         .catch(error => {
             console.error('Error loading the Bible data:', error);
-            document.getElementById('content-header').innerText = 'Could not load data.';
+            document.getElementById('main-content-area').innerHTML = '<h1>Error</h1><p>Could not load data.</p>';
         });
 };
 
@@ -44,6 +45,50 @@ function toggleTheme() {
     }
 }
 
+// --- Content Rendering ---
+const mainContentArea = document.getElementById('main-content-area');
+
+function displayDailyProverb() {
+    const proverbsBook = bibleData.books.find(book => book.name === 'Proverbs');
+    const allProverbs = [];
+    proverbsBook.chapters.forEach(ch => {
+        ch.verses.forEach(v => {
+            allProverbs.push({ text: v.text, reference: `Proverbs ${ch.chapter}:${v.verse}` });
+        });
+    });
+
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const dailyProverb = allProverbs[(dayOfYear - 1) % allProverbs.length];
+    
+    mainContentArea.innerHTML = `
+        <div class="proverb-view-container">
+            <div>
+                <p class="proverb-text">“${dailyProverb.text}”</p>
+                <p class="proverb-reference">${dailyProverb.reference}</p>
+            </div>
+        </div>
+    `;
+}
+
+function renderVerseContent(bookName, chapterNum) {
+    const book = bibleData.books.find(b => b.name === bookName);
+    const chapter = book.chapters.find(c => c.chapter == chapterNum);
+    
+    const versesHTML = chapter.verses.map(v => `<p><sup>${v.verse}</sup>${v.text}</p>`).join('');
+    
+    // ADDED the "content-padding" class here
+    mainContentArea.innerHTML = `
+        <div class="content-padding">
+            <h1 id="content-header">${bookName} ${chapterNum}</h1>
+            <div id="bible-text" class="bible-text">
+                ${versesHTML}
+            </div>
+        </div>
+    `;
+    mainContentArea.scrollTop = 0; // Scroll to top
+}
+
 // --- Navigation Rendering ---
 const navList = document.getElementById('nav-list');
 const navTitle = document.getElementById('nav-title');
@@ -51,9 +96,11 @@ const navTitle = document.getElementById('nav-title');
 function renderBookList() {
     appState.mode = 'books';
     navTitle.textContent = 'The Bible';
+    navTitle.style.cursor = 'default';
+    navTitle.onclick = null;
+    
     navList.innerHTML = bibleData.books.map(book => `<li data-book="${book.name}">${book.name}</li>`).join('');
     
-    // Add event listeners to the new list items
     document.querySelectorAll('#nav-list li').forEach(item => {
         item.addEventListener('click', handleNavClick);
     });
@@ -74,22 +121,8 @@ function renderChapterList(bookName) {
         item.addEventListener('click', handleNavClick);
     });
 
-    // Automatically load the first chapter
-    renderVerseContent(bookName, 1);
+    renderVerseContent(bookName, 1); // Automatically load the first chapter
     highlightActiveChapter(1);
-}
-
-// --- Content Rendering ---
-const contentHeader = document.getElementById('content-header');
-const bibleText = document.getElementById('bible-text');
-
-function renderVerseContent(bookName, chapterNum) {
-    const book = bibleData.books.find(b => b.name === bookName);
-    const chapter = book.chapters.find(c => c.chapter == chapterNum);
-    
-    contentHeader.textContent = `${bookName} ${chapterNum}`;
-    bibleText.innerHTML = chapter.verses.map(v => `<p><sup>${v.verse}</sup>${v.text}</p>`).join('');
-    bibleText.parentElement.scrollTop = 0; // Scroll to top
 }
 
 // --- Event Handlers ---
@@ -105,9 +138,7 @@ function handleNavClick(event) {
 }
 
 function highlightActiveChapter(chapterNum) {
-    // Remove active class from all items
     document.querySelectorAll('#nav-list li').forEach(item => item.classList.remove('active'));
-    // Add active class to the clicked item
     const activeItem = document.querySelector(`#nav-list li[data-chapter='${chapterNum}']`);
     if (activeItem) {
         activeItem.classList.add('active');
